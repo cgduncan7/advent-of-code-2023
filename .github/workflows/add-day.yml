@@ -1,0 +1,13 @@
+name: Add day
+
+on:
+  schedule: '0 5 * 12 *' # Every day in December at 5am UTC (12am EST)
+  workflow_dispatch:
+
+jobs:
+  add-day:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Make new day folder
+        run: make new day=$(date +%d)
