@@ -1,7 +1,8 @@
 name: Add day
 
 on:
-  schedule: '0 5 * 12 *' # Every day in December at 5am UTC (12am EST)
+  schedule: 
+    - cron: '0 5 * 12 *' # Every day in December at 5am UTC (12am EST)
   workflow_dispatch:
 
 jobs:
