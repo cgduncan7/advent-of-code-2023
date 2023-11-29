@@ -16,5 +16,6 @@ jobs:
         run: |
           git config --global user.name "Collin Duncan"
           git config --global user.email "3679940+cgduncan7@users.noreply.github.com"
-          git commit -a -m "Commit for new day"
+          git add .
+          git commit -m "Commit for new day"
           git push
