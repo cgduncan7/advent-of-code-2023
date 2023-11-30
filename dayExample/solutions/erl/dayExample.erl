@@ -3,7 +3,10 @@
 -export([run/1]).
 
 run(Filename) ->
-  harness:run(Filename, fun(D) -> solve(D) end, all).
+  harness:run(Filename, fun(D) -> solve(D) end, bytes).
 
 solve(Data) ->
-  io:fwrite("~s~n",[Data]).
+  case Data of
+    nil -> 420;
+    D -> io:fwrite("'~s'~n",[D])
+  end.

@@ -15,7 +15,7 @@ endif
 run:
 ifdef day
 ifdef solution
-		@make -C day$(day)/solutions/$(solution) run
+		@make -C day$(day)/solutions/$(solution)
 else
 		@echo Run again with argument solution=<name>
 endif
