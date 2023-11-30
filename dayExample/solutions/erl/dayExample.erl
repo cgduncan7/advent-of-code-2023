@@ -3,10 +3,11 @@
 -export([run/1]).
 
 run(Filename) ->
-  harness:run(Filename, fun(D) -> solve(D) end, bytes).
+  harness:run(Filename, fun solve/2, {0, 0}, lines).
 
-solve(Data) ->
+solve(Data, {Max, Current}) ->
   case Data of
-    nil -> 420;
-    D -> io:fwrite("'~s'~n",[D])
+    nil -> Max;
+    [] -> {erlang:max(Max, Current), 0};
+    D -> {Max, Current + erlang:list_to_integer(D)}
   end.
