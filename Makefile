@@ -15,9 +15,13 @@ endif
 run:
 ifdef day
 ifdef solution
-		@make -C day$(day)/solutions/$(solution)
+ifdef data
+		@make -C day$(day)/solutions/$(solution) data=$(data)
 else
-		@echo Run again with argument solution=<name>
+	@echo Run again with argument data=<filename>
+endif
+else
+	@echo Run again with argument solution=<name>
 endif
 else
 	@echo 'Run again with argument day=<n>'

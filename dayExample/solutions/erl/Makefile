@@ -7,4 +7,4 @@ build:
 
 run:
 	@echo Running solution: $(solution_name)
-	@erl -noshell -eval 'dayExample:run("../../data/test.txt")' -s init stop
+	@erl -noshell -eval 'dayExample:run("../../data/$(data).txt")' -s init stop
