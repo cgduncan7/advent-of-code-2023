@@ -38,9 +38,6 @@ card_to_number_value(D) -> {V, _} = string:to_integer([D]), V.
 get_hand_score(Cards) ->
   get_hand_score_from_occurrences(get_card_occurrences(Cards)).
 
-% get_num_jokers(Cards) ->
-%   lists:fold(fun (E, Acc) ->Acc + if E =:= $J -> 1; E =/= $J -> 0 end end, 0, Cards).
-
 get_card_occurrences(Cards) ->
   Inc = fun (V) -> V + 1 end,
   NonJokers = lists:filter(fun (E) -> E =/= 1 end, Cards),
