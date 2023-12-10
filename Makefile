@@ -29,3 +29,14 @@ endif
 else
 	@echo 'Run again with argument day=<n>'
 endif
+
+run-all:
+ifdef solution
+ifdef data
+		@ls | grep "day" | tr -d "day" | xargs -I {} make run day={} solution=$(solution) data=$(data)
+else
+	@echo Run again with argument data=<filename>
+endif
+else
+	@echo Run again with argument solution=<name>
+endif

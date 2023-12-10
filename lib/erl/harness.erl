@@ -28,8 +28,8 @@ handle_read_line({error, Reason}) -> {error, Reason}.
 
 timed_run(Name, Exec, Args) ->
   io:fwrite("Running: ~s~n", [Name]),
-  {Time, RetVal} = timer:tc(Exec, Args, millisecond),
-  io:fwrite("Answer: ~w~nTime: (~wms / ~ws)~n", [RetVal, Time, Time / 1_000]).
+  {Time, RetVal} = timer:tc(Exec, Args, microsecond),
+  io:fwrite("Answer: ~w~nTime: (~wus / ~wms / ~ws)~n", [RetVal, Time, Time / 1_000, Time / 1_000_000]).
 
 run(Name, Filename, Fn, State, bytes) ->
   IOD = handle_open_file(Filename),
