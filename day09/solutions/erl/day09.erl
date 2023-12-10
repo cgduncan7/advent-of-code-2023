@@ -1,10 +1,10 @@
 -module(day09).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 run(Filename) ->
-  harness:run(Filename, fun solve_pt1/2, 0, lines),
-  harness:run(Filename, fun solve_pt2/2, 0, lines).
+  harness:run("Part 1", Filename, fun solve_pt1/2, 0, lines),
+  harness:run("Part 2", Filename, fun solve_pt2/2, 0, lines).
 
 solve_pt1(Data, State) ->
   case Data of

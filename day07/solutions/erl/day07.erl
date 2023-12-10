@@ -1,5 +1,5 @@
 -module(day07).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 -record(hand, {
@@ -9,36 +9,56 @@
 }).
 
 run(Filename) ->
-  harness:run(Filename, fun solve/2, [], lines).
+  harness:run("Part 1", Filename, fun solve_pt1/2, [], lines),
+  harness:run("Part 2", Filename, fun solve_pt2/2, [], lines).
 
-solve(Data, State) ->
+solve_pt1(Data, State) ->
   case Data of
     nil ->
       {_, TotalWinnings} = lists:foldl(fun (H, {I, T}) -> {I+1, T + get_winnings(H, I)} end, {1, 0}, sort_hands(State)),
       TotalWinnings;
     Data ->
-      {Cards, Bid} = parse_input_line(Data),
-      Score = get_hand_score(Cards),
+      {Cards, Bid} = parse_input_line(Data, normal),
+      Score = get_hand_score(Cards, normal),
       State ++ [#hand{cards=Cards,score=Score,bid=Bid}]
   end.
 
-parse_input_line(Line) ->
+solve_pt2(Data, State) ->
+  case Data of
+    nil ->
+      {_, TotalWinnings} = lists:foldl(fun (H, {I, T}) -> {I+1, T + get_winnings(H, I)} end, {1, 0}, sort_hands(State)),
+      TotalWinnings;
+    Data ->
+      {Cards, Bid} = parse_input_line(Data, jokers),
+      Score = get_hand_score(Cards, jokers),
+      State ++ [#hand{cards=Cards,score=Score,bid=Bid}]
+  end.
+
+parse_input_line(Line, Type) ->
   [Hand, Bid] = string:lexemes(Line, " "),
-  Cards = lists:map(fun (E) -> card_to_number_value(E) end, Hand),
+  HandValues = lists:map(fun (E) -> card_to_number_value(E, Type) end, Hand),
   {BidValue, _} = string:to_integer(Bid),
-  {Cards, BidValue}.
+  {HandValues, BidValue}.
 
-card_to_number_value($A) -> 14;
-card_to_number_value($K) -> 13;
-card_to_number_value($Q) -> 12;
-card_to_number_value($J) -> 1; % now lowest
-card_to_number_value($T) -> 10;
-card_to_number_value(D) -> {V, _} = string:to_integer([D]), V.
+card_to_number_value($A, _) -> 14;
+card_to_number_value($K, _) -> 13;
+card_to_number_value($Q, _) -> 12;
+card_to_number_value($J, normal) -> 11;
+card_to_number_value($J, jokers) -> 1; % now lowest
+card_to_number_value($T, _) -> 10;
+card_to_number_value(D, _) -> {V, _} = string:to_integer([D]), V.
 
-get_hand_score(Cards) ->
-  get_hand_score_from_occurrences(get_card_occurrences(Cards)).
+get_hand_score(Cards, Type) ->
+  get_hand_score_from_occurrences(get_card_occurrences(Cards, Type)).
 
-get_card_occurrences(Cards) ->
+get_card_occurrences(Cards, normal) ->
+  Inc = fun (V) -> V + 1 end,
+  lists:sort(maps:values(lists:foldl(
+    fun (E, Acc) -> maps:update_with(E, Inc, 1, Acc) end,
+    maps:new(),
+    Cards
+  )));
+get_card_occurrences(Cards, jokers) ->
   Inc = fun (V) -> V + 1 end,
   NonJokers = lists:filter(fun (E) -> E =/= 1 end, Cards),
   NumJokers = 5 - erlang:length(NonJokers),

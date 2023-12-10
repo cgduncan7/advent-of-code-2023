@@ -1,5 +1,5 @@
 -module(day08).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 -record(state, {
@@ -14,9 +14,24 @@
 }).
 
 run(Filename) ->
-  harness:run(Filename, fun solve/2, #state{}, lines).
+  harness:run("Part 1", Filename, fun solve_pt1/2, #state{}, lines),
+  harness:run("Part 2", Filename, fun solve_pt2/2, #state{}, lines).
 
-solve(Data, State) ->
+solve_pt1(Data, State) ->
+  Instructions = State#state.instructions,
+  Nodes = State#state.nodes,
+  case Data of
+    nil -> traverse(State, "AAA", 0, pt1);
+    "" -> State;
+    Data -> case Instructions of
+      undefined -> #state{instructions=parse_instructions(Data)};
+      _ -> 
+        {K, V} = parse_node(Data),
+        #state{instructions=Instructions, nodes=maps:put(K, V, Nodes)}
+    end 
+  end.
+
+solve_pt2(Data, State) ->
   Instructions = State#state.instructions,
   Nodes = State#state.nodes,
   case Data of
@@ -26,7 +41,7 @@ solve(Data, State) ->
         Nodes
       ),
       StartingNodes = maps:keys(M),
-      lcm(lists:map(fun (N) -> traverse(State, N, 0) end, StartingNodes));
+      lcm(lists:map(fun (N) -> traverse(State, N, 0, pt2) end, StartingNodes));
     "" -> State;
     Data -> case Instructions of
       undefined -> #state{instructions=parse_instructions(Data)};
@@ -50,7 +65,13 @@ get_nth_instruction(Instructions, N) ->
   Index = (N rem erlang:length(Instructions)) + 1,
   lists:nth(Index, Instructions).
 
-traverse(State, Start, X) ->
+traverse(_, "ZZZ", X, pt1) -> X;
+traverse(State, Start, X, pt1) ->
+  CurrentNode = maps:get(Start, State#state.nodes),
+  Instruction = get_nth_instruction(State#state.instructions, X),
+  NextNode = traverse_to_node(Instruction, CurrentNode),
+  traverse(State, NextNode, X+1, pt1);
+traverse(State, Start, X, pt2) ->
   EndsInZ = ends_in_z(Start),
   if
     EndsInZ -> X;
@@ -58,7 +79,7 @@ traverse(State, Start, X) ->
       CurrentNode = maps:get(Start, State#state.nodes),
       Instruction = get_nth_instruction(State#state.instructions, X),
       NextNode = traverse_to_node(Instruction, CurrentNode),
-      traverse(State, NextNode, X+1)
+      traverse(State, NextNode, X+1, pt2)
   end.
 
 traverse_to_node(left, #node{left=Left}) -> Left;

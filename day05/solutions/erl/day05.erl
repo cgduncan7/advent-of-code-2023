@@ -1,5 +1,5 @@
 -module(day05).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 -record(mapentry, {
@@ -14,16 +14,30 @@
 }).
 
 run(Filename) ->
-  harness:run(Filename, fun solve/2, {[], []}, lines).
+  harness:run("Part 1", Filename, fun solve_pt1/2, {[], []}, lines),
+  harness:run("Part 2", Filename, fun solve_pt2/2, {[], []}, lines).
 
-% input2 = 125742456
-
-solve(Data, {Map, SourceValues}) ->
+solve_pt1(Data, {Map, SourceValues}) ->
   case erlang:length(SourceValues) of
     0 -> {[], extract_seed_numbers(Data)};
     _ -> case Data of
-        nil -> SP = lists:min(convert_all_values(Map, SourceValues)), SP;
-        [] -> {[], convert_all_values(Map, SourceValues)};
+        nil -> lists:min(convert_all_values(Map, SourceValues, pair));
+        [] -> {[], convert_all_values(Map, SourceValues, pair)};
+        D -> case is_map_start(D) of
+          true -> {Map, SourceValues}; % just skip the line
+          false ->
+            Entry = create_map_entry(D),
+            {lists:append(Map, [Entry]), SourceValues}
+        end
+      end
+  end.
+
+solve_pt2(Data, {Map, SourceValues}) ->
+  case erlang:length(SourceValues) of
+    0 -> {[], extract_seed_pairs(extract_seed_numbers(Data), [])};
+    _ -> case Data of
+        nil -> SP = lists:min(convert_all_values(Map, SourceValues, range)), SP#seed_pair.start;
+        [] -> {[], convert_all_values(Map, SourceValues, range)};
         D -> case is_map_start(D) of
           true -> {Map, SourceValues}; % just skip the line
           false ->
@@ -40,8 +54,10 @@ is_map_start(Line) ->
   end.
 
 extract_seed_numbers(Line) -> 
-  SeedPairs = lists:map(fun (S) -> {V,_} = string:to_integer(S), V end, tl(string:lexemes(Line, ": "))),
-  extract_seed_pairs(SeedPairs, []).
+  lists:map(
+    fun (S) -> {V,_} = string:to_integer(S), V end,
+    tl(string:lexemes(Line, ": "))
+  ).
 
 extract_seed_pairs([], Values) -> Values;
 extract_seed_pairs([First,Second|Rest], Values) ->
@@ -52,10 +68,37 @@ create_map_entry(Data) ->
   [Dest, Source, Range] = lists:map(fun (S) -> {V,_} = string:to_integer(S), V end, string:lexemes(Data, " ")),
   #mapentry{dest_start=Dest, source_start=Source, range=Range}.
 
-convert_all_values([], Values) -> Values;
-convert_all_values(_, []) -> [];
-convert_all_values(Map, Values) ->
-  lists:flatten(lists:map(fun (V) -> convert_single_value(Map, V) end, Values)).
+convert_all_values([], Values, _) -> Values;
+convert_all_values(_, [], _) -> [];
+convert_all_values(Map, Values, Type) ->
+  lists:flatten(lists:map(fun (V) -> convert_single_value(Map, V, Type) end, Values)).
+
+convert_single_value(Map, Value, pair) ->
+  case lists:search(fun (ME) -> (Value >= ME#mapentry.source_start) and (Value - ME#mapentry.source_start =< ME#mapentry.range) end, Map) of
+    {value, V} -> V#mapentry.dest_start + (Value - V#mapentry.source_start);
+    _ -> Value
+  end;
+convert_single_value([], Value, range) -> [Value];
+convert_single_value(Map, Value, range) ->
+  {M, O} = lists:foldl(
+    fun(ME, {Mapped, Original}) ->
+      SP = split_seedpair_by_mapentry(Value, ME),
+      case SP of
+        {none, _} -> {Mapped, Original};
+        {In, _} ->
+          DestSeedPair = #seed_pair{start=ME#mapentry.dest_start + (In#seed_pair.start - ME#mapentry.source_start), range=In#seed_pair.range},
+          {sets:add_element(DestSeedPair, Mapped),sets:add_element(In, Original)}
+      end
+    end,
+    {sets:new(), sets:new()},
+    Map
+  ),
+  Remaining = get_remaining_range(O, Value),
+  Y = lists:append([sets:to_list(M), Remaining]),
+  case erlang:length(Y) of
+    0 -> [Value];
+    _ -> Y
+  end. 
 
 get_range(S, E) -> E - S + 1.
 
@@ -83,28 +126,6 @@ get_remaining_range(Set, SeedPair) ->
     End =:= SeedPair#seed_pair.start + SeedPair#seed_pair.range -> SPs;
     true -> lists:append([SPs, [#seed_pair{start=End, range=get_range(End, SeedPair#seed_pair.start + SeedPair#seed_pair.range - 1)}]])
   end.
-
-convert_single_value([], Value) -> [Value];
-convert_single_value(Map, Value) ->
-  {M, O} = lists:foldl(
-    fun(ME, {Mapped, Original}) ->
-      SP = split_seedpair_by_mapentry(Value, ME),
-      case SP of
-        {none, _} -> {Mapped, Original};
-        {In, _} ->
-          DestSeedPair = #seed_pair{start=ME#mapentry.dest_start + (In#seed_pair.start - ME#mapentry.source_start), range=In#seed_pair.range},
-          {sets:add_element(DestSeedPair, Mapped),sets:add_element(In, Original)}
-      end
-    end,
-    {sets:new(), sets:new()},
-    Map
-  ),
-  Remaining = get_remaining_range(O, Value),
-  Y = lists:append([sets:to_list(M), Remaining]),
-  case erlang:length(Y) of
-    0 -> [Value];
-    _ -> Y
-  end. 
 
 split_seedpair_by_mapentry(SeedPair, MapEntry) ->
   SeedPairStart = SeedPair#seed_pair.start,

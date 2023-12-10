@@ -1,5 +1,5 @@
 -module(harness).
--export([run/4]).
+-export([run/5]).
 
 handle_open_file(Filename) ->
  case file:open(Filename, read) of
@@ -26,17 +26,18 @@ handle_read_line(eof) -> eof;
 handle_read_line({ok, Data}) -> {ok, string:trim(Data, trailing, "\n")};
 handle_read_line({error, Reason}) -> {error, Reason}.
 
-timed_run(Exec, Args) ->
+timed_run(Name, Exec, Args) ->
+  io:fwrite("Running: ~s~n", [Name]),
   {Time, RetVal} = timer:tc(Exec, Args, millisecond),
   io:fwrite("Answer: ~w~nTime: (~wms / ~ws)~n", [RetVal, Time, Time / 1_000]).
 
-run(Filename, Fn, State, bytes) ->
+run(Name, Filename, Fn, State, bytes) ->
   IOD = handle_open_file(Filename),
   ReadFn = fun (In) -> file:read(In, 1) end,
-  timed_run(fun handle_read_data/5, [IOD, ReadFn, Fn, State, loop]);
-run(Filename, Fn, State, lines) -> 
+  timed_run(Name, fun handle_read_data/5, [IOD, ReadFn, Fn, State, loop]);
+run(Name, Filename, Fn, State, lines) -> 
   IOD = handle_open_file(Filename),
   ReadFn = fun (D) -> handle_read_line(file:read_line(D)) end,
-  timed_run(fun handle_read_data/5, [IOD, ReadFn, Fn, State, loop]);
-run(Filename, Fn, State, all) ->
-  timed_run(fun handle_read_data/5, [Filename, fun (FN) -> file:read_file(FN) end, Fn, State, noloop]).
+  timed_run(Name, fun handle_read_data/5, [IOD, ReadFn, Fn, State, loop]);
+run(Name, Filename, Fn, State, all) ->
+  timed_run(Name, fun handle_read_data/5, [Filename, fun (FN) -> file:read_file(FN) end, Fn, State, noloop]).

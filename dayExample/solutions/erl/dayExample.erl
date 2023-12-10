@@ -1,9 +1,9 @@
 -module(dayExample).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 run(Filename) ->
-  harness:run(Filename, fun solve/2, {0, 0}, lines).
+  harness:run("", Filename, fun solve/2, {0, 0}, lines).
 
 solve(Data, {Max, Current}) ->
   case Data of

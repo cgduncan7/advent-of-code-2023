@@ -1,11 +1,27 @@
 -module(day04).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 run(Filename) ->
-  harness:run(Filename, fun solve/2, {[], 0}, lines).
+  harness:run("Part 1", Filename, fun solve_pt1/2, 0, lines),
+  harness:run("Part 2", Filename, fun solve_pt2/2, {[], 0}, lines).
 
-solve(Data, {Queue, Total}) ->
+solve_pt1(Data, State) ->
+  case Data of
+    nil -> State;
+    _ -> 
+      SI = split_input_string(Data),
+      WN = get_winning_numbers(SI),
+      CN = get_card_numbers(SI),
+      MN = lists:filter(fun (C) -> contains(C, WN) end, CN),
+      Val = case erlang:length(MN) of
+        0 -> 0;
+        X -> round(math:pow(2, X - 1))
+      end,
+      State + Val
+  end.
+
+solve_pt2(Data, {Queue, Total}) ->
   case Data of
     nil -> Total;
     _ -> 

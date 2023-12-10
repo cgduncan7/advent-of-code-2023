@@ -1,5 +1,5 @@
 -module(day03).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 -record(symbol, {
@@ -21,7 +21,7 @@
 }).
 
 run(Filename) ->
-  harness:run(Filename, fun solve/2, #state{}, bytes).
+  harness:run("Part 1 & 2", Filename, fun solve/2, #state{}, bytes).
 
 solve(Data, State) ->
   case Data of

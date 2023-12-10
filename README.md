@@ -35,6 +35,6 @@ build:
     # Build stuff
 
 run:
-	@echo Running solution: $(solution_name)
+	@echo $(solution_name)
     # Run stuff
 ```

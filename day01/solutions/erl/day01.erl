@@ -1,9 +1,9 @@
 -module(day01).
--import(harness, [run/3]).
+-import(harness, [run/5]).
 -export([run/1]).
 
 run(Filename) ->
-  harness:run(Filename, fun solve/2, 0, lines).
+  harness:run("Part 1 & 2", Filename, fun solve/2, 0, lines).
 
 % Glorious
 string_number_to_number([$1|_]) -> "1";

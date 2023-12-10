@@ -6,5 +6,5 @@ build:
 	@erlc ../../../lib/erl/harness.erl day09.erl
 
 run:
-	@echo Running solution: $(solution_name)
+	@echo $(solution_name)
 	@erl -noshell -eval 'day09:run("../../data/$(data).txt")' -s init stop
