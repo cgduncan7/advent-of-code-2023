@@ -4,6 +4,11 @@ on:
   schedule: 
     - cron: '0 5 * 12 *' # Every day in December at 5am UTC (12am EST)
   workflow_dispatch:
+    inputs:
+      day_number:
+        description: 'Day number'
+        type: string
+        required: false
 
 jobs:
   add-day:
