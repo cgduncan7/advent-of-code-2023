@@ -1,10 +1,10 @@
-solution_name = "Day 1 solution"
+solution_name = "Day XX solution"
 
 all: build run
 
 build:
-	@erlc ../../../lib/erl/harness.erl day01.erl
+	@erlc ../../../lib/erl/harness.erl dayXX.erl
 
 run:
 	@echo $(solution_name)
-	@erl -noshell -eval 'day01:run("../../data/$(data).txt")' -s init stop
+	@erl -noshell -eval 'dayXX:run("../../data/$(data).txt")' -s init stop
